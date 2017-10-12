@@ -1,0 +1,28 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.seckill.dao.SuccessKilledDao">
+
+    <!--success_killed表使用seckill_id和user_phone作为联合主键，防止用户重复秒杀，
+        当主键冲突时，mysql会报错，用ignore关键字可保证不会重复插入且不报错，而返回0-->
+    <insert id="insertSuccessKilled">
+        INSERT ignore INTO success_killed(seckill_id, user_phone, state)
+        VALUE (#{seckillId}, #{userPhone}, 0)
+    </insert>
+
+    <!-- 可以配置mybatis去扫描实体类所在的包,所以resultType不需要写出全类名 -->
+    <select id="queryByIdWithSeckill" resultType="SuccessKilled" parameterType="long">
+        SELECT sk.seckill_id, sk.user_phone, sk.state, sk.create_time,
+                s.seckill_id "seckill.seckillId",
+                s.name "seckill.name",
+                s.number "seckill.number",
+                s.create_time "seckill.createTime",
+                s.start_time "seckill.startTime",
+                s.end_time "seckill.endTime"
+        FROM success_killed sk
+        INNER JOIN seckill s ON sk.seckill_id = s.seckill_id
+        WHERE sk.seckill_id = #{seckillId} AND sk.user_phone = #{userPhone}
+    </select>
+
+</mapper>
